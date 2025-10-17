@@ -99,7 +99,7 @@
 
   // --- WebSocket 連線邏輯 (僅使用 initmove 立即跳轉) ---
 
-  const ws = new WebSocket('ws://twitch-cube-server.onrender.com');
+  const ws = new WebSocket('wss://twitch-cube-server.onrender.com');
   ws.onopen = () => console.log('✅ 已連線到 WebSocket 伺服器');
   ws.onmessage = e => {
     const newMove = e.data.trim();
@@ -122,3 +122,4 @@
 </body>
 
 </html>
+
