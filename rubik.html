@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Twitch 魔術方塊互動</title>
+<style>
+  body {
+    background:#111;
+    color:#eee;
+    font-family: system-ui, Segoe UI, Arial;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+    padding:18px;
+  }
+  #cube-wrapper {
+    width:320px;
+    height:320px;
+    cursor:grab;
+    user-select:none;
+  }
+  #c1 {
+    width:100%;
+    height:100%;
+    transform-style: preserve-3d;
+  }
+  button {
+    padding:8px 16px;
+    font-size:16px;
+    cursor:pointer;
+  }
+</style>
+</head>
+<body>
+<h2>魔術方塊 Twitch 互動</h2>
+
+<div id="cube-wrapper"><div id="c1"></div></div>
+<button id="scramble-btn">自動打亂魔方</button>
+<button id="set-0">還原魔方</button>
+<button id="debug-btn" style="background:crimson;">檢查動作序列</button>
+
+<script src="https://cdn.jsdelivr.net/gh/cubing/AnimCubeJS@gh-pages/AnimCube3.js"></script>
+
+<script>
+  // 1. 固定的視覺設定參數
+  const initialParams = "id=c1&buttonbar=0&colorscheme=wyorgb&speed=12&position=lluu&scale=1";
+  
+  // 2. 分別管理「基礎狀態」和「來自Twitch的累積動作」
+  let scrambleState = "#"; 
+  let twitchMoves = "";    
+
+  // 3. 產生隨機打亂步驟的函式 (不變)
+  function generateScramble(length = 25) {
+    const faces = ['R', 'L', 'U', 'D', 'F', 'B'];
+    const modifiers = ['', "'", '2'];
+    let scramble = '';
+    let lastFace = '';
+    for (let i = 0; i < length; i++) {
+      let face;
+      do {
+        face = faces[Math.floor(Math.random() * faces.length)];
+      } while (face === lastFace);
+      lastFace = face;
+      const modifier = modifiers[Math.floor(Math.random() * modifiers.length)];
+      scramble += face + modifier + ' ';
+    }
+    return scramble.trim();
+  }
+
+  // 4. 初始化魔術方塊
+  AnimCube3(initialParams + "&initmove=" + scrambleState);
+
+  // --- 按鈕功能 (這部分邏輯是正確的) ---
+
+  // 按鈕打亂
+  document.getElementById('scramble-btn').addEventListener('click', () => {
+    scrambleState = generateScramble(25);
+    twitchMoves = ""; // 打亂後，清空Twitch的動作
+    console.log("已設定新的初始狀態:", scrambleState);
+    const fullCommand = initialParams + "&initmove=" + scrambleState;
+    AnimCube3(fullCommand);
+  });
+
+  // 還原魔方
+  document.getElementById('set-0').addEventListener('click', () => {
+    scrambleState = "#";
+    twitchMoves = "";
+    AnimCube3(initialParams + "&initmove=" + scrambleState);
+  });
+
+  // 除錯按鈕
+  document.getElementById('debug-btn').addEventListener('click', () => {
+    console.log("當前初始狀態 (scrambleState):", scrambleState);
+    console.log("累積的Twitch動作 (twitchMoves):", twitchMoves);
+  });
+
+  // --- WebSocket 連線邏輯 (僅使用 initmove 立即跳轉) ---
+
+  const ws = new WebSocket('ws://localhost:8080');
+  ws.onopen = () => console.log('✅ 已連線到 WebSocket 伺服器');
+  ws.onmessage = e => {
+    const newMove = e.data.trim();
+    console.log('收到新指令:', newMove);
+
+    // 步驟 A: 更新累積的Twitch動作
+    twitchMoves = (twitchMoves + " " + newMove).trim();
+
+    // 步驟 B: 組合出「最終」的完整靜態狀態
+    // (打亂狀態 + 所有Twitch指令)
+    const fullState = (scrambleState === "#" ? "" : scrambleState + " ") + twitchMoves;
+
+    // 步驟 C: 組合並執行指令，只使用 initmove
+    const fullCommand = `${initialParams}&initmove=${fullState.trim()}`;
+    
+    console.log('執行指令 (即時跳轉):', fullCommand);
+    AnimCube3(fullCommand);
+  };
+</script>
+</body>
+</html>
