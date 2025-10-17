@@ -45,7 +45,8 @@
 
 <script>
   // 1. 固定的視覺設定參數
-  const initialParams = "id=c1&buttonbar=0&colorscheme=wyorgb&speed=12&position=lluu&scale=1";
+  
+  const initialParams = "id=c1&buttonbar=0&colorscheme=wyorgb&speed=12&position=lluu&scale=1&supercubemode=1&sign=1";
   
   // 2. 分別管理「基礎狀態」和「來自Twitch的累積動作」
   let scrambleState = "#"; 
@@ -98,7 +99,7 @@
 
   // --- WebSocket 連線邏輯 (僅使用 initmove 立即跳轉) ---
 
-  const ws = new WebSocket('wss://twitch-cube-server.onrender.com');
+  const ws = new WebSocket('ws://localhost:8080');
   ws.onopen = () => console.log('✅ 已連線到 WebSocket 伺服器');
   ws.onmessage = e => {
     const newMove = e.data.trim();
@@ -119,5 +120,4 @@
   };
 </script>
 </body>
-
 </html>

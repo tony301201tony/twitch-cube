@@ -20,14 +20,17 @@ const client = new tmi.Client({
 client.connect();
 
 // 1. 定義基礎指令和合法的後綴
-const baseFaces = ['R', 'L', 'U', 'D', 'F', 'B'];
-const modifiers = ['I', '2', '3', '4']; // 您可以自行增減數字，例如 '5', '6'
+// ------------------------------
+// 增加 X, Y, Z 到基礎面，作為視角旋轉指令
+const baseFaces = ['R', 'L', 'U', 'D', 'F', 'B', 'X', 'Y', 'Z']; 
+const modifiers = ['I', '2', '3', '4']; 
+// ------------------------------
 
 // 2. 動態產生完整的有效指令列表
-const validMoves = [...baseFaces]; // 先加入 R, L, U, D, F, B
+const validMoves = [...baseFaces]; // 先加入 R, L, U, D, F, B, X, Y, Z
 baseFaces.forEach(base => {
   modifiers.forEach(mod => {
-    validMoves.push(base + mod); // 再加入 RI, R2, R3, R4, LI, L2, ...
+    validMoves.push(base + mod); // 再加入 RI, R2, ..., XI, X2, ...
   });
 });
 
