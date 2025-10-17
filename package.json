@@ -1,0 +1,16 @@
+{
+  "name": "twitch-cube-server",
+  "version": "1.0.0",
+  "description": "Twitch Rubik's Cube Server",
+  "main": "rubik-server.js",
+  "scripts": {
+    "start": "node rubik-server.js"
+  },
+  "dependencies": {
+    "tmi.js": "^1.8.5",
+    "ws": "^8.17.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
